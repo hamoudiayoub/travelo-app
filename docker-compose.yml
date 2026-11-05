@@ -1,0 +1,101 @@
+version: "3.8"
+
+services:
+  # ── REVERSE PROXY NGINX ─────────────────────────────────────────
+  reverse-proxy:
+    image: nginx:alpine
+    ports:
+      - target: 80
+        published: 80
+        mode: host       
+      - "3306:3306"   # Point d'entrée TCP pour MySQL
+    configs:
+      - source: nginx_config
+        target: /etc/nginx/nginx.conf
+    networks:
+      - travelo-network
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 64M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+
+  # ── FRONTEND ──────────────────────────────────────────────────
+  frontend:
+    image: localhost:5000/travelo-frontend:1.0
+    networks:
+      - travelo-network
+    deploy:
+      mode: replicated
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+
+  # ── BACKEND ───────────────────────────────────────────────────
+  backend:
+    image: localhost:5000/travelo-backend:1.0
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://travelo-database:3306/travelo_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    networks:
+      - travelo-network
+    deploy:
+      mode: replicated
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 768M
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+
+  # ── DATABASE ──────────────────────────────────────────────────
+  travelo-database:
+    image: localhost:5000/mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    volumes:
+      - travelo-db-data:/var/lib/mysql
+    networks:
+      - travelo-network
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+configs:
+  nginx_config:
+    file: ./nginx.conf
+
+networks:
+  travelo-network:
+    driver: overlay
+
+volumes:
+  travelo-db-data:
+    external: true

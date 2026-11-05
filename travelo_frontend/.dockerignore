@@ -1,0 +1,31 @@
+# Dépendances Node.js — régénérées par npm ci dans le conteneur
+# Sans ce fichier, Docker enverrait node_modules (~300MB) au daemon
+# inutilement → build beaucoup plus lent
+node_modules
+
+# Dossier de build local — regénéré par npm run build dans le conteneur
+build
+
+# Fichiers Git — inutiles dans l'image
+.git
+.gitignore
+
+# Logs npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Variables d'environnement locales — ne jamais inclure dans une image
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dockerfile lui-même — inutile dans l'image
+Dockerfile
+.dockerignore
+
+# Fichiers de l'éditeur
+.vscode
+.idea

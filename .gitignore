@@ -1,0 +1,42 @@
+# =============================================================================
+# Rapports, LaTeX et Captures d'écran (Exclus du dépôt de code)
+# =============================================================================
+*.tex
+*.pdf
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Dossiers et fichiers d'images de rapport
+captures/
+*.png
+*.jpg
+*.jpeg
+
+# Scripts de génération de rapports
+extract_images.py
+generate_pdf_report.py
+fix-hosts.ps1
+
+# Manifestes Kubernetes (réservés pour le nouveau repo / Volet 3)
+namespace.yaml
+
+# =============================================================================
+# Dépendances et builds applicatifs
+# =============================================================================
+travelo_backend/target/
+travelo_backend/.classpath
+travelo_backend/.project
+travelo_backend/.settings/
+travelo_frontend/node_modules/
+travelo_frontend/build/
+travelo_frontend/.env.local
+travelo_frontend/.env.development.local
+travelo_frontend/.env.test.local
+travelo_frontend/.env.production.local
+.DS_Store
+Thumbs.db

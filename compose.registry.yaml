@@ -1,0 +1,87 @@
+
+services:
+  # ============================================================
+  # 1. DATABASE — Image récupérée depuis le registre privé
+  # ============================================================
+  travelo-database:
+    image: localhost:5000/mysql:8.0
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD manquant}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-travelo_db}
+
+    volumes:
+      - travelo-db-data:/var/lib/mysql
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'mysqladmin ping -h 127.0.0.1 -u root -p"$${MYSQL_ROOT_PASSWORD}" --silent'
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+    networks:
+      - backend-network
+
+
+  # ============================================================
+  # 2. BACKEND — Image récupérée depuis le registre privé
+  # ============================================================
+  travelo-backend:
+    image: localhost:5000/travelo-backend:1.0
+    restart: unless-stopped
+
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://travelo-database:3306/${MYSQL_DATABASE:-travelo_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-root}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:?SPRING_DATASOURCE_PASSWORD manquant}
+
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    depends_on:
+      travelo-database:
+        condition: service_healthy
+
+    networks:
+      - frontend-network
+      - backend-network
+
+
+  # ============================================================
+  # 3. FRONTEND — Image récupérée depuis le registre privé
+  # ============================================================
+  travelo-frontend:
+    image: localhost:5000/travelo-frontend:1.0
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:3000:3000"
+
+    depends_on:
+      travelo-backend:
+        condition: service_started
+
+    networks:
+      - frontend-network
+
+
+# ============================================================
+# VOLUME PERSISTANT
+# ============================================================
+volumes:
+  travelo-db-data:
+
+
+# ============================================================
+# RÉSEAUX
+# ============================================================
+networks:
+  frontend-network:
+    driver: bridge
+
+  backend-network:
+    driver: bridge

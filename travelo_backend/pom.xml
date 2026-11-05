@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.0</version>
+		<version>3.5.16</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
@@ -27,7 +27,15 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>23</java.version>
+		<!-- Override versions pour corriger les CVEs détectées par Docker Scout -->
+		<!-- jackson-databind 2.18.1 → 2.18.11 : fix CVE-2026-91776, CVE-2026-91777, CVE-2026-54512, CVE-2026-54513 -->
+		<jackson-bom.version>2.18.11</jackson-bom.version>
+		<!-- logback 1.5.12 → 1.5.35 : fix CVE-2026-10532, CVE-2024-12798, CVE-2024-12801 -->
+		<logback.version>1.5.35</logback.version>
+		<!-- Java 21 LTS : version avec support long terme (jusqu'en 2029)
+		     Java 23 est non-LTS, fin de support Adoptium atteinte,
+		     aucune image Alpine 3.22+ disponible → plus de patches OS -->
+		<java.version>21</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
